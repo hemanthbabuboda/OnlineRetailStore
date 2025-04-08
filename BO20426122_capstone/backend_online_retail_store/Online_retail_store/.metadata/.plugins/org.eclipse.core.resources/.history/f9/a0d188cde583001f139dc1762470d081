@@ -1,0 +1,87 @@
+package com.onlineretailstore.order.serviceImpl;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.onlineretailstore.order.entity.Order;
+import com.onlineretailstore.order.exception.OrderNotFoundException; // Import the custom exception
+import com.onlineretailstore.order.repository.OrderDao;
+import com.onlineretailstore.order.service.OrderService;
+
+/**
+ * Implementation of the OrderService interface.
+ * This class provides methods to manage orders including
+ * adding, searching, updating, and deleting orders in the system.
+ */
+@Service
+public class OrderServiceImpl implements OrderService {
+
+    @Autowired
+    private OrderDao repo;
+
+    /**
+     * Adds a new order to the repository.
+     *
+     * @param od the order to be added
+     * @return the saved order
+     */
+    @Override
+    public Order addOrder(Order od) {
+        return repo.save(od);
+    }
+
+    /**
+     * Searches for an order by its ID.
+     *
+     * @param orderId the ID of the order to search for
+     * @return the found order
+     * @throws OrderNotFoundException if no order is found with the given ID
+     */
+    @Override
+    public Order searchOrder(Integer orderId) throws OrderNotFoundException {
+        Optional<Order> order = repo.findById(orderId);
+        if (order.isPresent()) {
+            return order.get();
+        } else {
+            throw new OrderNotFoundException("Order with ID " + orderId + " not found.");
+        }
+    }
+
+    /**
+     * Updates an existing order.
+     *
+     * @param orderId the ID of the order to update
+     * @param order   the new order data
+     * @return the updated order
+     * @throws OrderNotFoundException if no order is found with the given ID
+     */
+    @Override
+    public Order updateOrder(Integer orderId, Order order) throws OrderNotFoundException {
+        if (repo.findById(orderId).isPresent()) {
+            Order updatedOrder = new Order(orderId, order.getLineItems());
+            return repo.save(updatedOrder);
+        } else {
+            throw new OrderNotFoundException("Order with ID " + orderId + " not found.");
+        }
+    }
+
+    /**
+     * Deletes an order by its ID.
+     *
+     * @param orderId the ID of the order to delete
+     * @return a message indicating the result of the deletion
+     * @throws OrderNotFoundException if no order is found with the given ID
+     */
+    @Override
+    public String deleteOrder(Integer orderId) throws OrderNotFoundException {
+        Optional<Order> order = repo.findById(orderId);
+        if (order.isPresent()) {
+            repo.delete(order.get());
+            return "Successfully Deleted";
+        } else {
+            throw new OrderNotFoundException("Order with ID " + orderId + " not found.");
+        }
+    }
+}

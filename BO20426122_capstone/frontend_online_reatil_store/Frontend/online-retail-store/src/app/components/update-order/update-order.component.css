@@ -1,0 +1,91 @@
+/* Styling for the Update Order Container */
+.update-order-container {
+    max-width: 600px; /* Maximum width for the container */
+    margin: 20px auto; /* Center the container */
+    padding: 20px; /* Inner spacing */
+    background-color: #ffffff; /* White background */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+h2 {
+    text-align: center; /* Center the main heading */
+    color: #333; /* Dark text for readability */
+    margin-bottom: 20px; /* Space below heading */
+}
+
+h3 {
+    margin-top: 20px; /* Space above subheadings */
+    color: #333; /* Dark text for subheading */
+}
+
+/* Form group styling */
+.form-group {
+    margin-bottom: 15px; /* Space between form groups */
+}
+
+/* Label styling */
+label {
+    display: block; /* Labels on a new line */
+    font-weight: bold; /* Bold for emphasis */
+    color: #555; /* Slightly lighter color for labels */
+}
+
+/* Input styling */
+input.form-control {
+    width: 100%; /* Full width for inputs */
+    padding: 10px; /* Inner padding */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 4px; /* Rounded corners */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+input.form-control:focus {
+    border-color: #28a745; /* Green border on focus */
+    outline: none; /* Remove outline */
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); /* Shadow on focus */
+}
+
+/* Button styling */
+button.btn {
+    display: inline-block; /* Inline block for buttons */
+    padding: 10px 15px; /* Inner padding */
+    border: none; /* No border */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+}
+
+button.btn-primary {
+    background-color: #007bff; /* Primary color for search button */
+    color: white; /* White text */
+}
+
+button.btn-primary:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+button.btn-success {
+    background-color: #28a745; /* Success color for update button */
+    color: white; /* White text */
+}
+
+button.btn-success:hover {
+    background-color: #218838; /* Darker shade on hover */
+}
+
+/* Alert message styling */
+.alert {
+    padding: 15px; /* Inner padding */
+    border-radius: 4px; /* Rounded corners */
+    color: white; /* White text for alert */
+    background-color: #dc3545; /* Red background for error */
+}
+
+.alert-danger {
+    background-color: #dc3545; /* Specific red for danger alert */
+}
+
+/* Margin for the error message */
+.mt-4 {
+    margin-top: 1.5rem; /* Top margin for spacing */
+}

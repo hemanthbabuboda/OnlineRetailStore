@@ -1,0 +1,24 @@
+<h2>Search Customer</h2>
+<form (ngSubmit)="searchCustomer()">
+  <label>Customer ID:</label>
+  <input type="number" [(ngModel)]="customerId" name="customerId" required />
+  <button type="submit">Search</button>
+</form>
+
+<div *ngIf="customer">
+  <h3>Customer Details</h3>
+  <p><strong>Name:</strong> {{customer.customerName}}</p>
+  <p><strong>Email:</strong> {{customer.customerEmail}}</p>
+  <h4>Billing Address</h4>
+  <div *ngFor="let address of customer.customerBillingAddress">
+    <p>{{address.doorNo}}, {{address.streetName}}, {{address.layout}}, {{address.city}}, {{address.pincode}}</p>
+  </div>
+  <h4>Shipping Address</h4>
+  <div *ngFor="let address of customer.customerShippingAddress">
+    <p>{{address.doorNo}}, {{address.streetName}}, {{address.layout}}, {{address.city}}, {{address.pincode}}</p>
+  </div>
+</div>
+
+<div *ngIf="errorMessage">
+  <p>{{errorMessage}}</p>
+</div>

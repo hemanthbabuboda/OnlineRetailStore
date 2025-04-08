@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: Inventory 
+  datasource:
+    url: jdbc:mysql://localhost:3306/inventory  
+    username: root
+    password: Pass@123 
+    driver-class-name: com.mysql.cj.jdbc.Driver 
+  jpa:
+    hibernate:
+      ddl-auto: update 
+    show-sql: true 
+    database-platform: org.hibernate.dialect.MySQL5Dialect 
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+server:
+  port: 8083 
+
+  cloud:
+    config:
+      enabled: false 
+      import-check:
+        enabled: false 

@@ -1,0 +1,112 @@
+.navbar {
+    background-color: #545454;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .navbar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .navbar li {
+    display: inline;
+    margin: 0 15px;
+  }
+  
+  .navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .navbar a:hover {
+    color: #ccc;
+  }
+
+  /* Overall styling for the Inventory Management section */
+.inventory-management {
+  max-width: 800px; /* Maximum width for the entire section */
+  margin: 20px auto; /* Center the section */
+  padding: 20px; /* Inner spacing */
+  background-color: #ffffff; /* White background */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+h2, h3 {
+  text-align: center; /* Center the headings */
+  color: #333; /* Dark text for readability */
+  margin-bottom: 20px; /* Space below headings */
+}
+
+/* Form styling */
+.inventory-form {
+  margin-bottom: 30px; /* Space below the form */
+}
+
+.form-group {
+  margin-bottom: 15px; /* Space between form fields */
+}
+
+label {
+  display: block; /* Labels on a new line */
+  font-weight: bold; /* Bold for emphasis */
+  color: #555; /* Slightly lighter color for labels */
+}
+
+input {
+  width: 100%; /* Full width for inputs */
+  padding: 10px; /* Inner padding */
+  border: 1px solid #ddd; /* Light border */
+  border-radius: 4px; /* Rounded corners */
+  box-sizing: border-box; /* Include padding in width */
+}
+
+input:focus {
+  border-color: #007bff; /* Border color on focus */
+  outline: none; /* Remove outline */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Shadow on focus */
+}
+
+/* Button styling for form submission */
+button {
+  display: inline-block; /* Inline block for buttons */
+  padding: 10px 15px; /* Inner padding */
+  background-color: #28a745; /* Success color */
+  border: none; /* No border */
+  color: white; /* White text */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer on hover */
+}
+
+button:hover {
+  background-color: #218838; /* Darker shade on hover */
+}
+
+/* Inventory list styling */
+.inventory-list {
+  list-style-type: none; /* No bullets */
+  padding: 0; /* No padding */
+  margin: 0; /* No margin */
+}
+
+.inventory-list li {
+  display: flex; /* Flexbox for alignment */
+  justify-content: space-between; /* Space between items */
+  align-items: center; /* Center items vertically */
+  padding: 15px; /* Inner padding */
+  margin-bottom: 10px; /* Space between list items */
+  background-color: #f9f9f9; /* Light background for list items */
+  border-radius: 4px; /* Rounded corners */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+.inventory-list button {
+  background-color: #dc3545; /* Danger color for delete */
+}
+
+.inventory-list button:hover {
+  background-color: #c82333; /* Darker shade on hover */
+}

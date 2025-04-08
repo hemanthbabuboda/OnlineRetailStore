@@ -1,0 +1,39 @@
+<nav class="navbar">
+  <ul>
+    <li><a routerLink="/searchCart"> Search Cart</a></li>
+    <li><a routerLink="/updateCart">Update Cart</a></li>
+    <li><a routerLink="/deleteCart">Delete Cart</a></li>
+  </ul>
+</nav>
+
+
+
+<div class="cart-form">
+  <h2>{{'Create New Cart' }}</h2>
+  <form #cartForm="ngForm" (ngSubmit)="submitCart(cartForm)">
+
+    <div *ngFor="let item of cart.lineItem; let i = index">
+      <div class="line-item">
+        <label for="productId">Product ID</label>
+        <input type="number" name="productId{{i}}" [(ngModel)]="item.productId" required />
+
+        <label for="productName">Product Name</label>
+        <input type="text" name="productName{{i}}" [(ngModel)]="item.productName" required />
+
+        <label for="quantity">Quantity</label>
+        <input type="number" name="quantity{{i}}" [(ngModel)]="item.quantity" required />
+
+        <label for="price">Price</label>
+        <input type="number" name="price{{i}}" [(ngModel)]="item.price" required />
+
+        <button type="button" (click)="removeLineItem(i)" *ngIf="cart.lineItem.length > 1">Remove</button>
+      </div>
+    </div>
+
+    <button type="button" (click)="addLineItem()">Add Line Item</button>
+
+    <div>
+      <button type="submit">{{'Create Cart' }}</button>
+    </div>
+  </form>
+</div>

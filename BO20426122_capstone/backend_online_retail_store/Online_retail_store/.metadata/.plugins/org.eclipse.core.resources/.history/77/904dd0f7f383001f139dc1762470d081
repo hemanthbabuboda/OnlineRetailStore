@@ -1,0 +1,24 @@
+package com.wipro.shoppingservice.service;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.wipro.shoppingservice.entity.Cart;
+import com.wipro.shoppingservice.entity.CompleteCustomerOrderDetails;
+import com.wipro.shoppingservice.entity.Customer;
+import com.wipro.shoppingservice.entity.Order;
+import com.wipro.shoppingservice.entity.ProductWrapper;
+
+public interface ShoppingService {
+
+	public ResponseEntity<?> addProduct(@RequestBody ProductWrapper product);
+
+	public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer);
+
+	public ResponseEntity<Cart> addItemsToCart(@PathVariable Integer customerId, @RequestBody Cart cart);
+
+	public ResponseEntity<Order> order(@PathVariable Integer customerId);
+
+	public ResponseEntity<CompleteCustomerOrderDetails> getAllOrders(@PathVariable Integer customerId);
+}

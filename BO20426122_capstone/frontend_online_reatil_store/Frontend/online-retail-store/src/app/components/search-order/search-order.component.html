@@ -1,0 +1,39 @@
+<div class="search-order-container">
+    <h2>Search Order</h2>
+  
+    <!-- Form to search order by ID -->
+    <form (ngSubmit)="searchOrder()">
+      <div class="form-group">
+        <label for="orderId">Order ID:</label>
+        <input
+          type="number"
+          id="orderId"
+          class="form-control"
+          [(ngModel)]="orderId"
+          name="orderId"
+          required
+        />
+      </div>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  
+    <!-- Display order details if found -->
+    <div *ngIf="order" class="order-details mt-4">
+      <h3>Order Details</h3>
+      <p><strong>Order ID:</strong> {{ order.orderId }}</p>
+      <p><strong>Line Items:</strong></p>
+      <ul>
+        <li *ngFor="let item of order.lineItems">
+          <strong>Product Name:</strong> {{ item.productName }} <br />
+          <strong>Quantity:</strong> {{ item.quantity }} <br />
+          <strong>Price:</strong> {{ item.price }} <br />
+        </li>
+      </ul>
+    </div>
+  
+    <!-- Display error message if order is not found -->
+    <div *ngIf="errorMessage" class="alert alert-danger mt-4">
+      {{ errorMessage }}
+    </div>
+  </div>
+  

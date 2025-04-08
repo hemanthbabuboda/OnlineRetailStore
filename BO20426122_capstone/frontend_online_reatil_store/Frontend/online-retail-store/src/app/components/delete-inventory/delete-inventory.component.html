@@ -1,0 +1,14 @@
+<div>
+    <h2>Delete Inventory</h2>
+  
+    <form (ngSubmit)="deleteInventory()">
+      <label>Inventory ID:</label>
+      <input type="number" [(ngModel)]="inventoryId" name="inventoryId" required />
+      <button type="submit">Delete Inventory</button>
+    </form>
+  
+    <div *ngIf="errorMessage">
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>
+  

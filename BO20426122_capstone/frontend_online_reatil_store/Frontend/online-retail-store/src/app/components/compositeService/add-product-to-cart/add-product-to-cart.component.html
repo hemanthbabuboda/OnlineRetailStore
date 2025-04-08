@@ -1,0 +1,30 @@
+<div class="cart-form">
+    <h2>Add product to cart</h2>
+    <form #cartForm="ngForm" (ngSubmit)="submitCart(cartForm)">
+      
+      <label for="customerId">Customer ID</label>
+      <input type="number" name="customerId" [(ngModel)]="customerId" required />
+  
+      <div *ngFor="let item of cart.lineItem; let i = index" class="line-item">
+        <h3>Product</h3>
+        
+        <label for="productId">Product ID</label>
+        <input type="number" name="productId{{i}}" [(ngModel)]="item.productId" required />
+  
+        <label for="productName">Product Name</label>
+        <input type="text" name="productName{{i}}" [(ngModel)]="item.productName" required />
+  
+        <label for="quantity">Quantity</label>
+        <input type="number" name="quantity{{i}}" [(ngModel)]="item.quantity" required />
+  
+        <label for="price">Price</label>
+        <input type="number" name="price{{i}}" [(ngModel)]="item.price" required />
+
+      </div>
+  
+      <div>
+        <button type="submit">Create Cart</button>
+      </div>
+    </form>
+  </div>
+  

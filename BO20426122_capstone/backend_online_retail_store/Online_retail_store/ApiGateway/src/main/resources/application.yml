@@ -1,0 +1,52 @@
+
+
+server:
+  port: 3333
+  
+spring:
+   application:
+      name: api-gateway
+   main:
+        web-application-type: reactive
+       
+     
+     
+   cloud:
+      gateway:
+         discovery:
+            locator:
+               enabled: true
+         routes:
+            - id: shoppingservice
+              uri: http://localhost:8090
+              predicates:
+                - Path=/api/shoppingservice/**
+            - id: customer
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/customer/**
+            - id: products
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/products/**
+            - id: inventory
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/inventory/**
+            - id: cart
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/cart/**
+            - id: orders
+              uri: http://localhost:8085
+              predicates:
+                - Path=/api/order/**
+         globalcors:
+           add-to-simple-url-handler-mapping: true
+           cors-configurations:
+            '[/**]':
+             allowedOrigins: "*"
+             allowedHeaders: "*"
+             allowedMethods: "*"
+         default-filters:
+         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin  

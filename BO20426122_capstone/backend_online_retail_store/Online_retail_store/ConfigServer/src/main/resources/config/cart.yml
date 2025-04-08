@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: cart 
+  datasource:
+    url: jdbc:mysql://localhost:3306/cart
+    username: root 
+    password: Pass@123 
+  jpa:
+    hibernate:
+      ddl-auto: update  
+    show-sql: true  
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect 
+
+server:
+  port: 8084
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

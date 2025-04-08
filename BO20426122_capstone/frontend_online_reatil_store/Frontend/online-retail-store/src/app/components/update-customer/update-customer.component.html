@@ -1,0 +1,170 @@
+<h2>Update Customer</h2>
+<form (ngSubmit)="updateCustomer()" #updateCustomerForm="ngForm" novalidate>
+  <label>Customer ID:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerId" 
+    name="customerId" 
+    required 
+    #customerId="ngModel"
+  />
+  <div *ngIf="customerId.invalid && customerId.touched">
+    <small>Customer ID is required.</small>
+  </div>
+
+  <label>Name:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerName" 
+    name="name" 
+    required 
+    minlength="3" 
+    #name="ngModel"
+  />
+  <div *ngIf="name.invalid && name.touched">
+    <small *ngIf="name.errors?.['required']">Name is required.</small>
+    <small *ngIf="name.errors?.['minlength']">Name must be at least 3 characters long.</small>
+  </div>
+
+  <label>Email:</label>
+  <input 
+    type="email" 
+    [(ngModel)]="updatedCustomer.customerEmail" 
+    name="email" 
+    required 
+    email 
+    #email="ngModel"
+  />
+  <div *ngIf="email.invalid && email.touched">
+    <small *ngIf="email.errors?.['required']">Email is required.</small>
+    <small *ngIf="email.errors?.['email']">Invalid email format.</small>
+  </div>
+
+  <h3>Billing Address</h3>
+  <label>Door No:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerBillingAddress[0].doorNo" 
+    name="billingDoorNo" 
+    required 
+    #billingDoorNo="ngModel"
+  />
+  <div *ngIf="billingDoorNo.invalid && billingDoorNo.touched">
+    <small>Door No is required.</small>
+  </div>
+
+  <label>Street Name:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerBillingAddress[0].streetName" 
+    name="billingStreetName" 
+    required 
+    #billingStreetName="ngModel"
+  />
+  <div *ngIf="billingStreetName.invalid && billingStreetName.touched">
+    <small>Street Name is required.</small>
+  </div>
+
+  <label>Layout:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerBillingAddress[0].layout" 
+    name="billingLayout" 
+    required 
+    #billingLayout="ngModel"
+  />
+  <div *ngIf="billingLayout.invalid && billingLayout.touched">
+    <small>Layout is required.</small>
+  </div>
+
+  <label>City:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerBillingAddress[0].city" 
+    name="billingCity" 
+    required 
+    #billingCity="ngModel"
+  />
+  <div *ngIf="billingCity.invalid && billingCity.touched">
+    <small>City is required.</small>
+  </div>
+
+  <label>Pincode:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerBillingAddress[0].pincode" 
+    name="billingPincode" 
+    required 
+    pattern="^[0-9]{6}$" 
+    #billingPincode="ngModel"
+  />
+  <div *ngIf="billingPincode.invalid && billingPincode.touched">
+    <small *ngIf="billingPincode.errors?.['required']">Pincode is required.</small>
+    <small *ngIf="billingPincode.errors?.['pattern']">Pincode must be a 6-digit number.</small>
+  </div>
+
+  <h3>Shipping Address</h3>
+  <label>Door No:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerShippingAddress[0].doorNo" 
+    name="shippingDoorNo" 
+    required 
+    #shippingDoorNo="ngModel"
+  />
+  <div *ngIf="shippingDoorNo.invalid && shippingDoorNo.touched">
+    <small>Door No is required.</small>
+  </div>
+
+  <label>Street Name:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerShippingAddress[0].streetName" 
+    name="shippingStreetName" 
+    required 
+    #shippingStreetName="ngModel"
+  />
+  <div *ngIf="shippingStreetName.invalid && shippingStreetName.touched">
+    <small>Street Name is required.</small>
+  </div>
+
+  <label>Layout:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerShippingAddress[0].layout" 
+    name="shippingLayout" 
+    required 
+    #shippingLayout="ngModel"
+  />
+  <div *ngIf="shippingLayout.invalid && shippingLayout.touched">
+    <small>Layout is required.</small>
+  </div>
+
+  <label>City:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerShippingAddress[0].city" 
+    name="shippingCity" 
+    required 
+    #shippingCity="ngModel"
+  />
+  <div *ngIf="shippingCity.invalid && shippingCity.touched">
+    <small>City is required.</small>
+  </div>
+
+  <label>Pincode:</label>
+  <input 
+    type="text" 
+    [(ngModel)]="updatedCustomer.customerShippingAddress[0].pincode" 
+    name="shippingPincode" 
+    required 
+    pattern="^[0-9]{6}$" 
+    #shippingPincode="ngModel"
+  />
+  <div *ngIf="shippingPincode.invalid && shippingPincode.touched">
+    <small *ngIf="shippingPincode.errors?.['required']">Pincode is required.</small>
+    <small *ngIf="shippingPincode.errors?.['pattern']">Pincode must be a 6-digit number.</small>
+  </div>
+
+  <button type="submit" [disabled]="!updateCustomerForm.valid">Update Customer</button>
+</form>

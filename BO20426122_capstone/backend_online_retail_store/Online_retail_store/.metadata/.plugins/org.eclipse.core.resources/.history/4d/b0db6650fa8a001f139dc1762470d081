@@ -1,0 +1,16 @@
+server:
+  port: 9999  # Default port for Config Server
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:./config/  # Local directory for properties files
+  discovery:
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka/  # Eureka server URL
+				        

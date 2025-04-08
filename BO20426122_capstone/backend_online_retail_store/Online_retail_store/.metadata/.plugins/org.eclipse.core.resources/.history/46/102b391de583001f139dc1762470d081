@@ -1,0 +1,75 @@
+package com.onlinereatilstore.cart.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.onlinereatilstore.cart.entity.Cart;
+import com.onlinereatilstore.cart.serviceImpl.CartServiceImpl;
+
+/**
+ * REST controller for managing shopping carts.
+ * This class provides endpoints for adding, retrieving, updating, and deleting carts.
+ */
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins ="http://localhost:3000")
+public class CartController {
+
+    @Autowired
+    CartServiceImpl service;
+
+    /**
+     * Adds a new cart.
+     *
+     * @param inv The cart object to be added.
+     * @return ResponseEntity containing the created cart and HTTP status.
+     */
+    @PostMapping("/cart")
+    public ResponseEntity<Cart> addCart(@RequestBody Cart inv) {
+        return new ResponseEntity<Cart>(service.addCart(inv), HttpStatus.CREATED);
+    }
+
+    /**
+     * Retrieves a cart by its ID.
+     *
+     * @param cartId The ID of the cart to retrieve.
+     * @return ResponseEntity containing the found cart and HTTP status.
+     */
+    @GetMapping("/cart/{cartId}")
+    public ResponseEntity<Cart> getCart(@PathVariable Integer cartId) {
+        return new ResponseEntity<Cart>(service.searchCart(cartId), HttpStatus.OK);
+    }
+
+    /**
+     * Updates an existing cart.
+     *
+     * @param cartId The ID of the cart to update.
+     * @param cart   The cart object containing updated information.
+     * @return ResponseEntity containing the updated cart and HTTP status.
+     */
+    @PutMapping("/cart/{cartId}")
+    public ResponseEntity<Cart> updateCart(@PathVariable Integer cartId, @RequestBody Cart cart) {
+        return new ResponseEntity<Cart>(service.updateCart(cartId, cart), HttpStatus.OK);
+    }
+
+    /**
+     * Deletes a cart by its ID.
+     *
+     * @param cartId The ID of the cart to delete.
+     * @return ResponseEntity containing a success message and HTTP status.
+     */
+    @DeleteMapping("/cart/{cartId}")
+    public ResponseEntity<String> deleteCart(@PathVariable Integer cartId) {
+        return new ResponseEntity<String>(service.deleteCart(cartId), HttpStatus.OK);
+    }
+}

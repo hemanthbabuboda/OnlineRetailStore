@@ -1,0 +1,46 @@
+package com.onlineretailstore.shopping.entity;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToOne;
+
+@Entity
+public class CustomerCart {
+
+	@Id
+	private Integer customerId;
+	@OneToOne(cascade = { CascadeType.ALL })
+	private Cart cart;
+
+	public CustomerCart() {
+	}
+
+	public CustomerCart(Integer customerId, Cart cart) {
+		super();
+		this.customerId = customerId;
+		this.cart = cart;
+	}
+
+	public Integer getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
+	}
+
+	public Cart getCart() {
+		return cart;
+	}
+
+	public void setCart(Cart cart) {
+		this.cart = cart;
+	}
+
+	@Override
+	public String toString() {
+		return "CustomerCart [customerId=" + customerId + ", cart=" + cart + "]";
+	}
+
+}

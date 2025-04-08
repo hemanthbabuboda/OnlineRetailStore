@@ -1,0 +1,83 @@
+package com.onlineretailstore.order.serviceImpl;
+
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.onlineretailstore.order.entity.LineItem;
+import com.onlineretailstore.order.entity.Order;
+import com.onlineretailstore.order.repository.OrderDao;
+import com.onlineretailstore.order.service.OrderService;
+
+/**
+ * Implementation of the OrderService interface.
+ * This class provides methods to manage orders including
+ * adding, searching, updating, and deleting orders in the system.
+ */
+@Service
+public class OrderServiceImpl implements OrderService {
+
+    @Autowired
+    private OrderDao repo;
+
+    /**
+     * Adds a new order to the repository.
+     *
+     * @param od the order to be added
+     * @return the saved order
+     */
+    public Order addOrder(Order od) {
+        return repo.save(od);
+    }
+
+    /**
+     * Searches for an order by its ID.
+     *
+     * @param orderId the ID of the order to search for
+     * @return the found order, or a new Order with ID -1 if not found
+     */
+    public Order searchOrder(Integer orderId) {
+        Optional<Order> cust = repo.findById(orderId);
+
+        if (cust.isPresent()) {
+            return cust.get();
+        } else {
+            return new Order(-1, new ArrayList<LineItem>());
+        }
+    }
+
+    /**
+     * Updates an existing order.
+     *
+     * @param orderId the ID of the order to update
+     * @param order   the new order data
+     * @return the updated order, or a new Order with ID -1 if the order does not exist
+     */
+    public Order updateOrder(Integer orderId, Order order) {
+        if (repo.findById(orderId).isPresent()) {
+            Order cust = new Order(orderId, order.getLineItems());
+            return repo.save(cust);
+        } else {
+            return new Order(-1, new ArrayList<LineItem>());
+        }
+    }
+
+    /**
+     * Deletes an order by its ID.
+     *
+     * @param orderId the ID of the order to delete
+     * @return a message indicating success or failure
+     */
+    public String deleteOrder(Integer orderId) {
+        Optional<Order> cust = repo.findById(orderId);
+
+        if (cust.isPresent()) {
+            repo.delete(cust.get());
+            return "Successfully Deleted";
+        } else {
+            return "Order doesn't exist!";
+        }
+    }
+}

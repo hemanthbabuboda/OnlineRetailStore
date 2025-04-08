@@ -1,0 +1,19 @@
+<nav class="navbar">
+  <ul>
+    <li><a routerLink="/searchInventory"> Search Inventory</a></li>
+    <li><a routerLink="/updateInventory">Update Inventory</a></li>
+    <li><a routerLink="/deleteInventory">Delete Inventory</a></li>
+  </ul>
+</nav>
+
+
+<h2>Add New Inventory</h2>
+<form (ngSubmit)="addInventory()">
+  <label>Product ID:</label>
+  <input type="number" [(ngModel)]="newInventory.productId" name="productId" required />
+  <label>Quantity:</label>
+  <input type="number" [(ngModel)]="newInventory.quantity" name="quantity" required />
+  <button type="submit">Add Inventory</button>
+</form>
+
+<hr />

@@ -1,0 +1,21 @@
+<div>
+    <h2>Search Inventory</h2>
+  
+    <form (ngSubmit)="searchInventory()">
+      <label>Product ID:</label>
+      <input type="number" [(ngModel)]="inventoryId" name="inventoryId" required />
+      <button type="submit">Search</button>
+    </form>
+  
+    <div *ngIf="inventory">
+      <h3>Inventory Details:</h3>
+      <p><strong>ID:</strong> {{ inventory.inventoryId }}</p>
+      <p><strong>Product ID:</strong> {{ inventory.productId }}</p>
+      <p><strong>Quantity:</strong> {{ inventory.quantity }}</p>
+    </div>
+  
+    <div *ngIf="errorMessage">
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>
+  

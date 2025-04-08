@@ -1,0 +1,198 @@
+package com.wipro.shoppingservice.serviceImpl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.wipro.shoppingservice.dao.CustomerCartDao;
+import com.wipro.shoppingservice.dao.CustomerOrderDao;
+import com.wipro.shoppingservice.entity.Cart;
+import com.wipro.shoppingservice.entity.CompleteCustomerOrderDetails;
+import com.wipro.shoppingservice.entity.Customer;
+import com.wipro.shoppingservice.entity.CustomerCart;
+import com.wipro.shoppingservice.entity.CustomerOrder;
+import com.wipro.shoppingservice.entity.Inventory;
+import com.wipro.shoppingservice.entity.LineItem;
+import com.wipro.shoppingservice.entity.Order;
+import com.wipro.shoppingservice.entity.Product;
+import com.wipro.shoppingservice.entity.ProductWrapper;
+import com.wipro.shoppingservice.exception.BadRequestException;
+import com.wipro.shoppingservice.exception.ResourceNotFoundException;
+import com.wipro.shoppingservice.feign.FeignCart;
+import com.wipro.shoppingservice.feign.FeignCustomer;
+import com.wipro.shoppingservice.feign.FeignInventory;
+import com.wipro.shoppingservice.feign.FeignOrder;
+import com.wipro.shoppingservice.feign.FeignProduct;
+import com.wipro.shoppingservice.service.ShoppingService;
+
+@Service
+public class ShoppingServiceImpl implements ShoppingService {
+	@Autowired
+	FeignProduct feignProductClient;
+
+	@Autowired
+	FeignInventory feignInventoryClient;
+
+	@Autowired
+	FeignCustomer feignCustomerClient;
+
+	@Autowired
+	FeignCart feignCartClient;
+
+	@Autowired
+	FeignOrder feignOrderClient;
+
+	@Autowired
+	CustomerCartDao customerCartDao;
+
+	@Autowired
+	CustomerOrderDao customerOrderDao;
+
+	List<Order> orders;
+
+	@PostMapping("/products")
+	public ResponseEntity<?> addProduct(@RequestBody ProductWrapper product) {
+	    try {
+	        Product p1 = new Product(product.getProductName(), product.getProductDescription(), product.getProductPrice());
+	        ResponseEntity<Product> productEntity = feignProductClient.addProduct(p1);
+	        Integer productId = productEntity.getBody().getProductId();
+	        Integer qty = product.getQuantity();
+	        Inventory inv = new Inventory(productId, qty);
+	        ResponseEntity<Inventory> inventoryEntity = feignInventoryClient.addInventory(inv);
+
+	        if (productEntity.getStatusCode() == HttpStatus.CREATED
+	                && inventoryEntity.getStatusCode() == HttpStatus.CREATED) {
+	            return new ResponseEntity<ProductWrapper>(product, HttpStatus.OK);
+	        } else {
+	            throw new BadRequestException("Failed to add product or inventory.");
+	        }
+	    } catch (Exception e) {
+	        throw new BadRequestException("Error while adding product: " + e.getMessage());
+	    }
+	}
+
+
+	@PostMapping("/customer")
+	public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
+	    try {
+	        ResponseEntity<Customer> cust = feignCustomerClient.addCustomer(customer);
+	        orders = new ArrayList<Order>();
+	        Cart cart = feignCartClient.addCart(new Cart(null)).getBody();
+	        if (cust.getBody() == null || cart == null) {
+	            throw new BadRequestException("Customer or cart creation failed.");
+	        }
+	        CustomerCart customer_cart = new CustomerCart(cust.getBody().getCustomerId(), cart);
+	        customerCartDao.save(customer_cart);
+	        return cust;
+	    } catch (Exception e) {
+	        throw new BadRequestException("Error while adding customer: " + e.getMessage());
+	    }
+	}
+
+
+	@PutMapping("/customer/{customerId}/cart")
+	public ResponseEntity<Cart> addItemsToCart(@PathVariable Integer customerId, @RequestBody Cart cart) {
+
+
+		Optional<CustomerCart> customer_cart = customerCartDao.findById(customerId);
+
+		if (customer_cart.isPresent()) {
+			Integer cartId = customer_cart.get().getCart().getCartId();
+
+			List<LineItem> itemsWithoutPrice = cart.getLineItem();
+			List<LineItem> itemsWithPrice = new ArrayList<LineItem>();
+			for (LineItem item : itemsWithoutPrice) {
+				ResponseEntity<Product> productEntity = feignProductClient.getProduct(item.getProductId());
+				Double price = productEntity.getBody().getproductPrice();
+				String productName = productEntity.getBody().getProductName();
+				if (!item.getProductName().equalsIgnoreCase(productName)) {
+					item.setProductName("Product name doesn't match");
+					itemsWithPrice.add(item);
+					return new ResponseEntity<Cart>(new Cart(-1, itemsWithPrice), HttpStatus.NOT_FOUND);
+				}
+				item.setPrice(price);
+				item.setProductName(productName);
+				itemsWithPrice.add(item);
+			}
+
+			Cart new_cart = new Cart(itemsWithPrice);
+			ResponseEntity<Cart> cartEntity = feignCartClient.updateCart(cartId, new_cart);
+			CustomerCart updatedCustomerCart = new CustomerCart(customerId, cartEntity.getBody());
+			customerCartDao.save(updatedCustomerCart);
+			return cartEntity;
+		}
+		return new ResponseEntity<Cart>(new Cart(-1, null), HttpStatus.NOT_FOUND);
+
+	}
+
+	@PostMapping("/customer/{customerId}/order")
+	public ResponseEntity<Order> order(@PathVariable Integer customerId) {
+
+		Optional<CustomerCart> customer_cart = customerCartDao.findById(customerId);
+
+		if (customer_cart.isPresent()) {
+			Integer cartId = customer_cart.get().getCart().getCartId();
+			List<LineItem> items = feignCartClient.getCart(cartId).getBody().getLineItem();
+
+			ResponseEntity<Order> order = feignOrderClient.addOrder(new Order(items));
+			System.out.println(order);
+			if (order.getStatusCode() == HttpStatus.CREATED) {
+
+				// feignCartClient.deleteCart(cartId);
+				Cart cart = new Cart(null);
+				feignCartClient.updateCart(cartId, cart);
+
+				for (LineItem item : items) {
+					ResponseEntity<Inventory> inv = feignInventoryClient.getInventoryByProductId(item.getProductId());
+
+					Integer inventoryId = inv.getBody().getInventoryId();
+					Integer productId = inv.getBody().getProductId();
+					System.out.println(inv);
+					Integer qty = inv.getBody().getQuantity();
+					Integer new_qty = qty - item.getQuantity();
+
+					Inventory updated_inv = new Inventory(productId, new_qty);
+					feignInventoryClient.updateInventory(inventoryId, updated_inv);
+				}
+			}
+
+			orders.add(order.getBody());
+			System.out.println("List of orders ; " + orders);
+			CustomerOrder customerOrder = new CustomerOrder(customerId, orders);
+			customerOrderDao.save(customerOrder);
+			return order;
+		}
+
+		return new ResponseEntity<Order>(new Order(-1, null), HttpStatus.NOT_FOUND);
+
+	}
+
+	@GetMapping("/customer/{customerId}/orders")
+	public ResponseEntity<CompleteCustomerOrderDetails> getAllOrders(@PathVariable Integer customerId) {
+	    try {
+	        Optional<CustomerOrder> customer_order = customerOrderDao.findById(customerId);
+	        if (customer_order.isPresent()) {
+	            List<Order> orders = customer_order.get().getOrder();
+	            ResponseEntity<Customer> customer = feignCustomerClient.searchCustomer(customerId);
+	            CompleteCustomerOrderDetails CompleteCustomerOrderDetails = new CompleteCustomerOrderDetails(
+	                    customer.getBody(), orders);
+	            return new ResponseEntity<>(CompleteCustomerOrderDetails, HttpStatus.OK);
+	        }
+	        throw new ResourceNotFoundException("Customer order not found for ID: " + customerId);
+	    } catch (Exception e) {
+	        throw new BadRequestException("Error while fetching orders: " + e.getMessage());
+	    }
+	}
+
+
+}

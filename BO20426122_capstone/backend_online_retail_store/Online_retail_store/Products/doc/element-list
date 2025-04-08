@@ -1,0 +1,7 @@
+com.onlineretailstore.products
+com.onlineretailstore.products.controller
+com.onlineretailstore.products.entity
+com.onlineretailstore.products.exception
+com.onlineretailstore.products.repository
+com.onlineretailstore.products.service
+com.onlineretailstore.products.serviceImpl

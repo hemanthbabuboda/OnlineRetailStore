@@ -1,0 +1,5 @@
+package com.wipro.shoppingservice.exception;
+
+public class ResourceNotFoundException {
+
+}

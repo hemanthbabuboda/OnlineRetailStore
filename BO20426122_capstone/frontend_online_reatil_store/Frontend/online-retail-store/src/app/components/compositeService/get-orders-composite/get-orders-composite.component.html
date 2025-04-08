@@ -1,0 +1,28 @@
+
+<div>
+    <h2>Get Orders by Customer ID</h2>
+    <input type="number" [(ngModel)]="customerId" placeholder="Enter Customer ID" />
+    <button (click)="fetchOrders()">Fetch Orders</button>
+  
+    <div *ngIf="errorMessage" style="color: red;">
+      {{ errorMessage }}
+    </div>
+  
+    <div *ngIf="orderDetails">
+      <h3>Customer Details</h3>
+      <p>Name: {{ orderDetails.customer.customerName }}</p>
+      <p>Email: {{ orderDetails.customer.customerEmail }}</p>
+      <h3>Orders</h3>
+      <ul>
+        <li *ngFor="let order of orderDetails.orders">
+          Order ID: {{ order.orderId }}
+          <ul>
+            <li *ngFor="let item of order.lineItems">
+              {{ item.productName }} (Quantity: {{ item.quantity }}) - ${{ item.price }}
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+  

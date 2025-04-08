@@ -1,0 +1,14 @@
+package com.onlineretailstore.cart.service;
+
+import com.onlinereatilstore.cart.entity.Cart;
+
+public interface CartService {
+
+	public Cart addCart(Cart cust);
+
+	public Cart searchCart(Integer cartId);
+
+	public Cart updateCart(Integer cartId, Cart cart);
+
+	public String deleteCart(Integer cartId);
+}

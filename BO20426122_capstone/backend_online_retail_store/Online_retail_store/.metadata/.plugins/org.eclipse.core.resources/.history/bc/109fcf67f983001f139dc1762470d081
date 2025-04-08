@@ -1,0 +1,11 @@
+package com.wipro.shoppingservice.dao;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.onlineretailstore.shopping.entity.CustomerCart;
+
+@Repository
+public interface CustomerCartDao extends JpaRepository<CustomerCart, Integer> {
+
+}

@@ -1,0 +1,313 @@
+package com.onlineretailstore.shopping.serviceImpl;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.onlineretailstore.shopping.entity.Cart;
+import com.onlineretailstore.shopping.entity.CompleteCustomerOrderDetails;
+import com.onlineretailstore.shopping.entity.Customer;
+import com.onlineretailstore.shopping.entity.CustomerCart;
+import com.onlineretailstore.shopping.entity.CustomerOrder;
+import com.onlineretailstore.shopping.entity.Inventory;
+import com.onlineretailstore.shopping.entity.LineItem;
+import com.onlineretailstore.shopping.entity.Order;
+import com.onlineretailstore.shopping.entity.OrderWrapper;
+import com.onlineretailstore.shopping.entity.Product;
+import com.onlineretailstore.shopping.entity.ProductWrapper;
+import com.onlineretailstore.shopping.exception.BadRequestException;
+import com.onlineretailstore.shopping.exception.ResourceNotFoundException;
+import com.onlineretailstore.shopping.feign.FeignCart;
+import com.onlineretailstore.shopping.feign.FeignCustomer;
+import com.onlineretailstore.shopping.feign.FeignInventory;
+import com.onlineretailstore.shopping.feign.FeignOrder;
+import com.onlineretailstore.shopping.feign.FeignProduct;
+import com.onlineretailstore.shopping.repository.CustomerCartDao;
+import com.onlineretailstore.shopping.repository.CustomerOrderDao;
+import com.onlineretailstore.shopping.service.ShoppingService;
+
+@Service
+public class ShoppingServiceImpl implements ShoppingService {
+	private static final Logger logger = LoggerFactory.getLogger(ShoppingServiceImpl.class);
+
+	@Autowired
+	FeignProduct feignProductClient;
+
+	@Autowired
+	FeignInventory feignInventoryClient;
+
+	@Autowired
+	FeignCustomer feignCustomerClient;
+
+	@Autowired
+	FeignCart feignCartClient;
+
+	@Autowired
+	FeignOrder feignOrderClient;
+
+	@Autowired
+	CustomerCartDao customerCartDao;
+
+	@Autowired
+	CustomerOrderDao customerOrderDao;
+
+	List<Order> orders;
+
+	@PostMapping("/products")
+	public ResponseEntity<?> addProduct(@RequestBody ProductWrapper product) throws BadRequestException {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addProduct method");
+		logger.info("Adding product: {}", product);
+		try {
+			Product p1 = new Product(product.getProductName(), product.getProductDescription(),
+					product.getProductPrice());
+			ResponseEntity<Product> productEntity = feignProductClient.addProduct(p1);
+			Integer productId = productEntity.getBody().getProductId();
+			Integer qty = product.getQuantity();
+			Inventory inv = new Inventory(productId, qty);
+			ResponseEntity<Inventory> inventoryEntity = feignInventoryClient.addInventory(inv);
+
+			if (productEntity.getStatusCode() == HttpStatus.CREATED
+					&& inventoryEntity.getStatusCode() == HttpStatus.CREATED) {
+				logger.info("Product and inventory added successfully: {}", product);
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of addProduct() => " + responseTime.toMillis() + " ms");
+				return new ResponseEntity<ProductWrapper>(product, HttpStatus.OK);
+			} else {
+				logger.error("Failed to add product or inventory.");
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of addProduct() => " + responseTime.toMillis() + " ms");
+				throw new BadRequestException("Failed to add product or inventory.");
+			}
+		} catch (Exception e) {
+			logger.error("Error while adding product: {}", e.getMessage());
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of addProduct() => " + responseTime.toMillis() + " ms");
+			throw new BadRequestException("Error while adding product: " + e.getMessage());
+		}
+	}
+
+	@PostMapping("/customer")
+	public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) throws BadRequestException {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addCustomer method");
+		logger.info("Adding customer: {}", customer);
+		try {
+			ResponseEntity<Customer> cust = feignCustomerClient.addCustomer(customer);
+			orders = new ArrayList<Order>();
+			Cart cart = feignCartClient.addCart(new Cart(null)).getBody();
+			if (cust.getBody() == null || cart == null) {
+				logger.error("Customer or cart creation failed.");
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of addCustomer() => " + responseTime.toMillis() + " ms");
+				throw new BadRequestException("Customer or cart creation failed.");
+			}
+			CustomerCart customer_cart = new CustomerCart(cust.getBody().getCustomerId(), cart);
+			customerCartDao.save(customer_cart);
+			logger.info("Customer added successfully: {}", cust.getBody());
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of addCustomer() => " + responseTime.toMillis() + " ms");
+			return cust;
+		} catch (Exception e) {
+			logger.error("Error while adding customer: {}", e.getMessage());
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of addCustomer() => " + responseTime.toMillis() + " ms");
+			throw new BadRequestException("Error while adding customer: " + e.getMessage());
+		}
+	}
+
+	@PutMapping("/customer/{customerId}/cart")
+	public ResponseEntity<Cart> addItemsToCart(@PathVariable Integer customerId, @RequestBody Cart cart)
+			throws ResourceNotFoundException, BadRequestException {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addItemsToCart method");
+		logger.info("Adding items to cart for customer ID: {}", customerId);
+		Optional<CustomerCart> customer_cart = customerCartDao.findById(customerId);
+
+		if (!customer_cart.isPresent()) {
+			logger.error("Customer cart not found for ID: {}", customerId);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of addItemsToCart() => " + responseTime.toMillis() + " ms");
+			throw new ResourceNotFoundException("Customer cart not found for ID: " + customerId);
+		}
+
+		Integer cartId = customer_cart.get().getCart().getCartId();
+		List<LineItem> itemsWithoutPrice = cart.getLineItem();
+		List<LineItem> itemsWithPrice = new ArrayList<>();
+
+		for (LineItem item : itemsWithoutPrice) {
+			ResponseEntity<Product> productEntity = feignProductClient.getProduct(item.getProductId());
+
+			if (productEntity.getBody() == null) {
+				logger.error("Product not found for ID: {}", item.getProductId());
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of addItemsToCart() => " + responseTime.toMillis() + " ms");
+				throw new ResourceNotFoundException("Product not found for ID: " + item.getProductId());
+			}
+
+			Double price = productEntity.getBody().getproductPrice();
+			String productName = productEntity.getBody().getProductName();
+
+			if (!item.getProductName().equalsIgnoreCase(productName)) {
+				item.setProductName("Product name doesn't match");
+				itemsWithPrice.add(item);
+				logger.warn("Product name mismatch for item ID: {}", item.getProductId());
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of addItemsToCart() => " + responseTime.toMillis() + " ms");
+				return new ResponseEntity<>(new Cart(-1, itemsWithPrice), HttpStatus.NOT_FOUND);
+			}
+
+			item.setPrice(price);
+			item.setProductName(productName);
+			itemsWithPrice.add(item);
+		}
+
+		Cart new_cart = new Cart(itemsWithPrice);
+		ResponseEntity<Cart> cartEntity = feignCartClient.updateCart(cartId, new_cart);
+		CustomerCart updatedCustomerCart = new CustomerCart(customerId, cartEntity.getBody());
+		customerCartDao.save(updatedCustomerCart);
+		logger.info("Cart updated successfully for customer ID: {}", customerId);
+		LocalDateTime endTime = LocalDateTime.now();
+		Duration responseTime = Duration.between(startTime, endTime);
+		logger.info("Response time of addItemsToCart() => " + responseTime.toMillis() + " ms");
+		return cartEntity;
+	}
+
+	@PostMapping("/customer/{customerId}/order")
+	public ResponseEntity<Order> order(@PathVariable Integer customerId)
+			throws ResourceNotFoundException, BadRequestException {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering order method");
+		logger.info("Placing order for customer ID: {}", customerId);
+		Optional<CustomerCart> customer_cart = customerCartDao.findById(customerId);
+
+		if (!customer_cart.isPresent()) {
+			logger.error("Customer cart not found for ID: {}", customerId);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of order() => " + responseTime.toMillis() + " ms");
+			throw new ResourceNotFoundException("Customer cart not found for ID: " + customerId);
+		}
+
+		Integer cartId = customer_cart.get().getCart().getCartId();
+		List<LineItem> items = feignCartClient.getCart(cartId).getBody().getLineItem();
+System.out.println(items);
+		if (items == null || items.isEmpty()) {
+			logger.error("Cart is empty, cannot place an order.");
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of order() => " + responseTime.toMillis() + " ms");
+			throw new BadRequestException("Cart is empty, cannot place an order.");
+		}
+//		OrderWrapper order1 = new OrderWrapper(items.get(1),items.get(2),items.get(3),items.get(4));
+//		order1.setLineItems(items);
+		System.out.println(items.toString() + " order sending to order service");
+
+		ResponseEntity<Order> order = feignOrderClient.addOrder(new Order(items));
+		if (order.getStatusCode() != HttpStatus.CREATED) {
+			logger.error("Failed to create order.");
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of order() => " + responseTime.toMillis() + " ms");
+			throw new BadRequestException("Failed to create order.");
+		}
+
+		// Clear the cart after order creation
+		Cart cart = new Cart(null);
+		feignCartClient.updateCart(cartId, cart);
+
+		for (LineItem item : items) {
+			ResponseEntity<Inventory> inv = feignInventoryClient.getInventoryByProductId(item.getProductId());
+
+			if (inv.getBody() == null) {
+				logger.error("Inventory not found for Product ID: {}", item.getProductId());
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of order() => " + responseTime.toMillis() + " ms");
+				throw new ResourceNotFoundException("Inventory not found for Product ID: " + item.getProductId());
+			}
+
+			Integer inventoryId = inv.getBody().getInventoryId();
+			Integer productId = inv.getBody().getProductId();
+			Integer qty = inv.getBody().getQuantity();
+			Integer new_qty = qty - item.getQuantity();
+
+			if (new_qty < 0) {
+				logger.error("Insufficient inventory for Product ID: {}", productId);
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of order() => " + responseTime.toMillis() + " ms");
+				throw new BadRequestException("Insufficient inventory for Product ID: " + productId);
+			}
+
+			Inventory updated_inv = new Inventory(productId, new_qty);
+			feignInventoryClient.updateInventory(inventoryId, updated_inv);
+		}
+
+		orders.add(order.getBody());
+		CustomerOrder customerOrder = new CustomerOrder(customerId, orders);
+		customerOrderDao.save(customerOrder);
+		logger.info("Order placed successfully for customer ID: {}", customerId);
+		LocalDateTime endTime = LocalDateTime.now();
+		Duration responseTime = Duration.between(startTime, endTime);
+		logger.info("Response time of order() => " + responseTime.toMillis() + " ms");
+		return order;
+	}
+	
+
+	@GetMapping("/customer/{customerId}/orders")
+	public ResponseEntity<CompleteCustomerOrderDetails> getAllOrders(@PathVariable Integer customerId)
+			throws ResourceNotFoundException, BadRequestException {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addInventory method");
+		logger.info("Fetching all orders for customer ID: {}", customerId);
+		try {
+			Optional<CustomerOrder> customer_order = customerOrderDao.findById(customerId);
+			if (customer_order.isPresent()) {
+				List<Order> orders = customer_order.get().getOrder();
+				ResponseEntity<Customer> customer = feignCustomerClient.searchCustomer(customerId);
+				CompleteCustomerOrderDetails completeCustomerOrderDetails = new CompleteCustomerOrderDetails(
+						customer.getBody(), orders);
+				logger.info("Orders fetched successfully for customer ID: {}", customerId);
+				LocalDateTime endTime = LocalDateTime.now();
+				Duration responseTime = Duration.between(startTime, endTime);
+				logger.info("Response time of getAllOrders() => " + responseTime.toMillis() + " ms");
+				return new ResponseEntity<>(completeCustomerOrderDetails, HttpStatus.OK);
+			}
+			logger.error("Customer order not found for ID: {}", customerId);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of getAllOrders() => " + responseTime.toMillis() + " ms");
+			throw new ResourceNotFoundException("Customer order not found for ID: " + customerId);
+		} catch (Exception e) {
+			logger.error("Error while fetching orders: {}", e.getMessage());
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of getAllOrders() => " + responseTime.toMillis() + " ms");
+			throw new BadRequestException("Error while fetching orders: " + e.getMessage());
+		}
+	}
+}

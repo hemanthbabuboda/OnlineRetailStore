@@ -1,0 +1,46 @@
+<nav class="navbar">
+  <ul>
+    <li><a routerLink="/searchOrder"> Search Order</a></li>
+    <li><a routerLink="/updateOrder">Update Order</a></li>
+    <li><a routerLink="/deleteOrder">Delete Order</a></li>
+  </ul>
+</nav>
+
+<div class="order-form">
+  <h2>Create Order</h2>
+
+  <form (ngSubmit)="onSubmit()" #orderForm="ngForm">
+    <div class="form-group" *ngFor="let item of newOrder.lineItems; let i = index">
+      <label for="productName-{{i}}">Product Name</label>
+      <input type="text" id="productName-{{i}}" class="form-control" required [(ngModel)]="item.productName" name="productName-{{i}}" #productName="ngModel">
+      <div *ngIf="productName.invalid && (productName.dirty || productName.touched)" class="error">
+        Product Name is required
+      </div>
+
+      <label for="productId-{{i}}">Product ID</label>
+      <input type="number" id="productId-{{i}}" class="form-control" required [(ngModel)]="item.productId" name="productId-{{i}}" #productId="ngModel">
+      <div *ngIf="productId.invalid && (productId.dirty || productId.touched)" class="error">
+        Product ID is required
+      </div>
+
+      <label for="quantity-{{i}}">Quantity</label>
+      <input type="number" id="quantity-{{i}}" class="form-control" required [(ngModel)]="item.quantity" name="quantity-{{i}}" #quantity="ngModel">
+      <div *ngIf="quantity.invalid && (quantity.dirty || quantity.touched)" class="error">
+        Quantity is required
+      </div>
+
+      <label for="price-{{i}}">Price</label>
+      <input type="number" id="price-{{i}}" class="form-control" required [(ngModel)]="item.price" name="price-{{i}}" #price="ngModel">
+      <div *ngIf="price.invalid && (price.dirty || price.touched)" class="error">
+        Price is required
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-primary" (click)="addLineItem()">Add Line Item</button>
+    <button type="submit" class="btn btn-success" [disabled]="orderForm.invalid">Create Order</button>
+  </form>
+
+  <div *ngIf="orderCreated">
+    <p>Order created successfully!</p>
+  </div>
+</div>

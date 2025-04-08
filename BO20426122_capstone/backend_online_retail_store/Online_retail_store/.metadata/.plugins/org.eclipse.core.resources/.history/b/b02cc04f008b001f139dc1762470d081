@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: Inventory  # Name of the application
+  datasource:
+    url: jdbc:mysql://localhost:3306/inventory  # Database URL
+    username: root  # Database username
+    password: Pass@123  # Database password
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL Driver
+  jpa:
+    hibernate:
+      ddl-auto: update  # Hibernate auto DDL
+    show-sql: true  # Show SQL queries in logs
+    database-platform: org.hibernate.dialect.MySQL5Dialect  # Database platform
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect  # MySQL dialect
+
+server:
+  port: 8083  # Port for the Inventory service
+
+  cloud:
+    config:
+      enabled: false  # Disable Cloud Config
+      import-check:
+        enabled: false  # Disable import check

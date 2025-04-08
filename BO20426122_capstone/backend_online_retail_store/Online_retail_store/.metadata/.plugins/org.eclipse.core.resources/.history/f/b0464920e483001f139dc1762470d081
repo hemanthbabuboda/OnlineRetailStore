@@ -1,0 +1,26 @@
+package com.onlineretailstore.order.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+/**
+ * Global exception handler for the order service.
+ */
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    /**
+     * Handles OrderNotFoundException.
+     *
+     * @param ex the exception
+     * @return ResponseEntity with error message and HTTP status
+     */
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<String> handleOrderNotFoundException(OrderNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    // You can add more exception handlers here for other types of exceptions
+}

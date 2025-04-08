@@ -1,0 +1,5 @@
+package com.onlineretailstore.shopping.entity;
+
+public class OrderWrapper {
+
+}

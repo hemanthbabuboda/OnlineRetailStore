@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: shoppingservice  # Name of the application
+  datasource:
+    url: jdbc:mysql://localhost:3306/shipping_db  # Database URL
+    username: root  # Database username
+    password: Pass@123  # Database password
+  jpa:
+    hibernate:
+      ddl-auto: update  # Hibernate DDL strategy
+    show-sql: true  # Show SQL queries in logs
+    database-platform: org.hibernate.dialect.MySQL5Dialect  # MySQL dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect  # MySQL dialect for Hibernate
+
+server:
+  port: 8090  # Port for the Shopping Service
+
+  cloud:
+    config:
+      enabled: false  # Disable Spring Cloud Config

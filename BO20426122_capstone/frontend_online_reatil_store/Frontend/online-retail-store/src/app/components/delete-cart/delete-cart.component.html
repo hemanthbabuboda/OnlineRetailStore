@@ -1,0 +1,9 @@
+<div class="delete-cart">
+    <h2>Delete Cart by ID</h2>
+    <form (ngSubmit)="deleteCart()">
+      <label for="cartId">Cart ID</label>
+      <input type="number" [(ngModel)]="cartId" name="cartId" required />
+      <button type="submit">Delete Cart</button>
+    </form>
+  </div>
+  

@@ -1,0 +1,26 @@
+<div>
+    <h2>Update Inventory</h2>
+  
+    <form (ngSubmit)="getInventory()">
+      <label>Product ID:</label>
+      <input type="number" [(ngModel)]="inventoryId" name="inventoryId" required />
+      <button type="submit">Fetch Inventory</button>
+    </form>
+  
+    <div *ngIf="inventory">
+      <form (ngSubmit)="updateInventory()">
+        <label>Product ID:</label>
+        <input type="number" [(ngModel)]="inventory.productId" name="productId" required />
+        
+        <label>Quantity:</label>
+        <input type="number" [(ngModel)]="inventory.quantity" name="quantity" required />
+        
+        <button type="submit">Update Inventory</button>
+      </form>
+    </div>
+  
+    <div *ngIf="errorMessage">
+      <p>{{ errorMessage }}</p>
+    </div>
+  </div>
+  

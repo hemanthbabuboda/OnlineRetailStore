@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: shoppingservice 
+  datasource:
+    url: jdbc:mysql://localhost:3306/shipping_db 
+    username: root 
+    password: Pass@123  
+  jpa:
+    hibernate:
+      ddl-auto: update 
+    show-sql: true 
+    database-platform: org.hibernate.dialect.MySQL5Dialect 
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect 
+
+server:
+  port: 8090 

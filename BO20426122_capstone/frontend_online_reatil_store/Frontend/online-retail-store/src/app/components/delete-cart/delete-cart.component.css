@@ -1,0 +1,59 @@
+/* Overall styling for the Delete Cart section */
+.delete-cart {
+    max-width: 400px; /* Maximum width for the delete section */
+    margin: 20px auto; /* Center the section */
+    padding: 20px; /* Inner spacing */
+    background-color: #ffffff; /* White background */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+h2 {
+    text-align: center; /* Center the main heading */
+    color: #333; /* Dark text for readability */
+    margin-bottom: 20px; /* Space below heading */
+}
+
+/* Form styling */
+form {
+    display: flex; /* Use flexbox for alignment */
+    flex-direction: column; /* Stack elements vertically */
+}
+
+label {
+    display: block; /* Labels on a new line */
+    font-weight: bold; /* Bold for emphasis */
+    color: #555; /* Slightly lighter color for labels */
+    margin-top: 10px; /* Space above labels */
+}
+
+input {
+    width: 100%; /* Full width for inputs */
+    padding: 10px; /* Inner padding */
+    border: 1px solid #ddd; /* Light border */
+    border-radius: 4px; /* Rounded corners */
+    box-sizing: border-box; /* Include padding in width */
+    margin-top: 5px; /* Space above input fields */
+}
+
+input:focus {
+    border-color: #dc3545; /* Border color on focus */
+    outline: none; /* Remove outline */
+    box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); /* Shadow on focus */
+}
+
+/* Button styling */
+button {
+    display: inline-block; /* Inline block for buttons */
+    padding: 10px 15px; /* Inner padding */
+    background-color: #dc3545; /* Primary color for delete button */
+    border: none; /* No border */
+    color: white; /* White text */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer on hover */
+    margin-top: 15px; /* Space above buttons */
+}
+
+button:hover {
+    background-color: #c82333; /* Darker shade on hover */
+}

@@ -1,0 +1,138 @@
+package com.onlineretailstore.shopping.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.onlineretailstore.shopping.entity.Cart;
+import com.onlineretailstore.shopping.entity.CompleteCustomerOrderDetails;
+import com.onlineretailstore.shopping.entity.Customer;
+import com.onlineretailstore.shopping.entity.LineItem;
+import com.onlineretailstore.shopping.entity.Order;
+import com.onlineretailstore.shopping.entity.Product;
+import com.onlineretailstore.shopping.entity.ProductWrapper;
+import com.onlineretailstore.shopping.exception.BadRequestException;
+import com.onlineretailstore.shopping.exception.ResourceNotFoundException;
+import com.onlineretailstore.shopping.serviceImpl.ShoppingServiceImpl;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+@RestController
+@RefreshScope
+@RequestMapping("/api/shoppingservice")
+@CrossOrigin(origins = "http://localhost:4200")
+public class ShoppingserviceController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShoppingserviceController.class);
+
+    @Autowired
+    private ShoppingServiceImpl service;
+
+    @CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForAddingProducts")
+    @PostMapping("/products")
+    public ResponseEntity<?> addProduct(@RequestBody ProductWrapper product) {
+        try {
+            logger.info("Adding product: {}", product);
+            return service.addProduct(product);
+        } catch (BadRequestException e) {
+            logger.error("Failed to add product: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForAddingCustomers")
+    @PostMapping("/customer")
+    public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
+        try {
+            logger.info("Adding customer: {}", customer);
+            return service.addCustomer(customer);
+        } catch (BadRequestException e) {
+            logger.error("Failed to add customer: {}", e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForAddingItemsToCart")
+    @PutMapping("/customer/{customerId}/cart")
+    public ResponseEntity<Cart> addItemsToCart(@PathVariable Integer customerId, @RequestBody Cart cart) {
+        try {
+            logger.info("Adding items to cart for customer ID: {}", customerId);
+            return service.addItemsToCart(customerId, cart);
+        } catch (ResourceNotFoundException e) {
+            logger.error("Customer cart not found for ID {}: {}", customerId, e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (BadRequestException e) {
+            logger.error("Failed to add items to cart for customer ID {}: {}", customerId, e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForOrderingProducts")
+    @PostMapping("/customer/{customerId}/order")
+    public ResponseEntity<Order> order(@PathVariable Integer customerId) {
+        try {
+            logger.info("Placing order for customer ID: {}", customerId);
+            return service.order(customerId);
+        } catch (ResourceNotFoundException e) {
+            logger.error("Customer cart not found for ID {}: {}", customerId, e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (BadRequestException e) {
+            logger.error("Failed to place order for customer ID {}: {}", customerId, e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/customer/{customerId}/orders")
+    public ResponseEntity<CompleteCustomerOrderDetails> getAllOrders(@PathVariable Integer customerId) {
+        try {
+            logger.info("Fetching all orders for customer ID: {}", customerId);
+            return service.getAllOrders(customerId);
+        } catch (ResourceNotFoundException e) {
+            logger.error("Customer order not found for ID {}: {}", customerId, e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (BadRequestException e) {
+            logger.error("Failed to fetch orders for customer ID {}: {}", customerId, e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> defaultFallbackMethodForAddingProducts(RuntimeException e) {
+        logger.error("Fallback method for adding products triggered: {}", e.getMessage());
+        return new ResponseEntity<>(new Product(-1, e.getMessage(), null, null), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<Customer> defaultFallbackMethodForAddingCustomers(RuntimeException e) {
+        logger.error("Fallback method for adding customers triggered: {}", e.getMessage());
+        return new ResponseEntity<>(new Customer(-1, e.getMessage(), null, null, null), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<Cart> defaultFallbackMethodForAddingItemsToCart(RuntimeException e) {
+        logger.error("Fallback method for adding items to cart triggered: {}", e.getMessage());
+        LineItem item = new LineItem(-1, -1, e.getMessage(), null, null);
+        List<LineItem> items = new ArrayList<>();
+        items.add(item);
+        return new ResponseEntity<>(new Cart(-1, items), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<Order> defaultFallbackMethodForOrderingProducts(RuntimeException e) {
+        logger.error("Fallback method for ordering products triggered: {}", e.getMessage());
+        LineItem item = new LineItem(-1, -1, e.getMessage(), null, null);
+        List<LineItem> items = new ArrayList<>();
+        items.add(item);
+        return new ResponseEntity<>(new Order(-1, items), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}

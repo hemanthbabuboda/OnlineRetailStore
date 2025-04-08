@@ -1,0 +1,22 @@
+<div>
+    <h2>Search Product</h2>
+  
+    <!-- Search form -->
+    <form (ngSubmit)="getProduct()">
+      <label for="productId">Product ID:</label>
+      <input id="productId" [(ngModel)]="productId" name="productId" type="number" required />
+  
+      <button type="submit">Search</button>
+    </form>
+  
+    <!-- Display selected product details -->
+    <div *ngIf="selectedProduct">
+      <h3>Product Details</h3>
+      <p><strong>ID:</strong> {{ selectedProduct.productId }}</p>
+      <p><strong>Name:</strong> {{ selectedProduct.productName }}</p>
+      <p><strong>Description:</strong> {{ selectedProduct.productDescription }}</p>
+      <p><strong>Price:</strong> {{ selectedProduct.productPrice | currency }}</p>
+    </div>
+  
+  </div>
+  

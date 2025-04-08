@@ -1,0 +1,59 @@
+package com.onlinereatilstore.cart.serviceImpl;
+
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.onlinereatilstore.cart.entity.Cart;
+import com.onlinereatilstore.cart.entity.LineItem;
+import com.onlineretailstore.cart.repository.CartDao;
+import com.onlineretailstore.cart.service.CartService;
+
+@Service
+public class CartServiceImpl implements CartService {
+
+	@Autowired
+	CartDao repo;
+
+	public Cart addCart(Cart cust) {
+
+		return repo.save(cust);
+
+	}
+
+	public Cart searchCart(Integer cartId) {
+
+		Optional<Cart> cust = repo.findById(cartId);
+
+		if (cust.isPresent())
+			return cust.get();
+		else
+			return new Cart(-1, new ArrayList<LineItem>());
+	}
+
+	public Cart updateCart(Integer cartId, Cart cart) {
+
+		if (repo.findById(cartId).isPresent()) {
+			Cart cust = new Cart(cartId, cart.getLineItem());
+			return repo.save(cust);
+		}
+
+		else
+			return new Cart(-1, new ArrayList<LineItem>());
+	}
+
+	public String deleteCart(Integer cartId) {
+
+		Optional<Cart> cust = repo.findById(cartId);
+
+		if (cust.isPresent()) {
+			repo.delete(cust.get());
+			return "Successfully Deleted";
+		}
+
+		else
+			return "Cart doesn't exists!";
+	}
+}

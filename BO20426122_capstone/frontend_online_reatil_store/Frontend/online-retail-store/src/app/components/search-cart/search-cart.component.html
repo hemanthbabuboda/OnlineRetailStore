@@ -1,0 +1,19 @@
+<div class="search-cart">
+    <h2>Search Cart by ID</h2>
+    <form (ngSubmit)="searchCart()">
+      <label for="customerId">Customer ID</label>
+      <input type="number" [(ngModel)]="customerId" name="customerId" required />
+      <button type="submit">Search Cart</button>
+    </form>
+  
+    <div *ngIf="cart">
+      <h3>Cart Details</h3>
+      <p>Cart ID: {{ cart.cartId }}</p>
+      <ul>
+        <li *ngFor="let item of cart.lineItem">
+          Product: {{ item.productName }} - Quantity: {{ item.quantity }} - Price: {{ item.price }}
+        </li>
+      </ul>
+    </div>
+  </div>
+  

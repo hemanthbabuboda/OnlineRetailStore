@@ -1,0 +1,101 @@
+package com.wipro.shoppingservice.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.wipro.shoppingservice.entity.Cart;
+import com.wipro.shoppingservice.entity.CompleteCustomerOrderDetails;
+import com.wipro.shoppingservice.entity.Customer;
+import com.wipro.shoppingservice.entity.LineItem;
+import com.wipro.shoppingservice.entity.Order;
+import com.wipro.shoppingservice.entity.Product;
+import com.wipro.shoppingservice.entity.ProductWrapper;
+import com.wipro.shoppingservice.serviceImpl.ShoppingServiceImpl;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+@RestController
+@RefreshScope
+@RequestMapping("/api/shoppingservice")
+@CrossOrigin(origins = "http://localhost:4200")
+public class ShoppingserviceController {
+
+	@Autowired
+	ShoppingServiceImpl service;
+
+	List<Order> orders;
+
+	@CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForAddingProducts")
+	@PostMapping("/products")
+	public ResponseEntity<?> addProduct(@RequestBody ProductWrapper product) {
+
+		return service.addProduct(product);
+	}
+
+	@CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForAddingCustomers")
+	@PostMapping("/customer")
+	public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
+
+		return service.addCustomer(customer);
+	}
+
+	@CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForAddingItemsToCart")
+	@PutMapping("/customer/{customerId}/cart")
+	public ResponseEntity<Cart> addItemsToCart(@PathVariable Integer customerId, @RequestBody Cart cart) {
+
+		return service.addItemsToCart(customerId, cart);
+
+	}
+
+	@CircuitBreaker(name = "shoppingservice", fallbackMethod = "defaultFallbackMethodForOrderingProducts")
+	@PostMapping("/customer/{customerId}/order")
+	public ResponseEntity<Order> order(@PathVariable Integer customerId) {
+
+		return service.order(customerId);
+
+	}
+
+	@GetMapping("/customer/{customerId}/orders")
+	public ResponseEntity<CompleteCustomerOrderDetails> getAllOrders(@PathVariable Integer customerId) {
+
+		return service.getAllOrders(customerId);
+	}
+
+	public ResponseEntity<?> defaultFallbackMethodForAddingProducts(RuntimeException e) {
+		return new ResponseEntity<Product>(new Product(-1, e.getMessage(), null, null),
+				HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Customer> defaultFallbackMethodForAddingCustomers(RuntimeException e) {
+		return new ResponseEntity<Customer>(new Customer(-1, e.getMessage(), null, null, null),
+				HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Cart> defaultFallbackMethodForAddingItemsToCart(RuntimeException e) {
+		LineItem item = new LineItem(-1, -1, e.getMessage(), null, null);
+		List<LineItem> items = new ArrayList<LineItem>();
+		items.add(item);
+		return new ResponseEntity<Cart>(new Cart(-1, items), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Order> defaultFallbackMethodForOrderingProducts(RuntimeException e) {
+		LineItem item = new LineItem(-1, -1, e.getMessage(), null, null);
+		List<LineItem> items = new ArrayList<LineItem>();
+		items.add(item);
+		return new ResponseEntity<Order>(new Order(-1, items), HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+}

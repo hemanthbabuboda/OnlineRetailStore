@@ -1,0 +1,5 @@
+package com.onlineretailstore.order.exception;
+
+public class OrderNotFoundException {
+
+}

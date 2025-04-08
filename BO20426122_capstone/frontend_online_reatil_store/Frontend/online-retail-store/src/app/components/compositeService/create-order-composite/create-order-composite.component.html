@@ -1,0 +1,14 @@
+
+<div class="order-form">
+    <h2>Place an Order</h2>
+    <form #orderForm="ngForm" (ngSubmit)="onSubmit(orderForm)">
+      
+      <div class="form-group">
+        <label for="customerId">Customer ID</label>
+        <input type="number" name="customerId" [(ngModel)]="customerId" required />
+      </div>
+      
+      <button type="submit">Place Order</button>
+    </form>
+  </div>
+  

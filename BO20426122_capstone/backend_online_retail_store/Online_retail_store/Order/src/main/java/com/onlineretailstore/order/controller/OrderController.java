@@ -1,0 +1,168 @@
+package com.onlineretailstore.order.controller;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.onlineretailstore.order.entity.Order;
+import com.onlineretailstore.order.exception.OrderNotFoundException;
+import com.onlineretailstore.order.serviceImpl.OrderServiceImpl;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+/**
+ * Controller for managing orders in the online retail store. Provides RESTful
+ * endpoints for creating, retrieving, updating, and deleting orders.
+ */
+@RestController
+@RequestMapping("/api")
+public class OrderController {
+
+	private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+
+	@Autowired
+	private OrderServiceImpl service;
+
+	/**
+	 * Adds a new order.
+	 *
+	 * @param order the order to be added
+	 * @return a ResponseEntity containing the added order and HTTP status 201
+	 *         (Created)
+	 */
+	@CircuitBreaker(name = "orderService", fallbackMethod = "fallbackAddOrder")
+	@PostMapping("/order")
+	public ResponseEntity<Order> addOrder(@RequestBody Order order) {
+		System.out.println(order.getLineItems().toString() + " before methos starts");
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addOrder method");
+		logger.info("Request to add order: {}", order);
+		Order createdOrder = service.addOrder(order);
+		logger.info("Order added successfully: {}", createdOrder);
+		LocalDateTime endTime = LocalDateTime.now();
+		Duration responseTime = Duration.between(startTime, endTime);
+		logger.info("Response time of addOrder() => " + responseTime.toMillis() + " ms");
+		return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
+	}
+
+	/**
+	 * Retrieves an order by its ID.
+	 *
+	 * @param orderId the ID of the order to retrieve
+	 * @return a ResponseEntity containing the found order and HTTP status 200 (OK)
+	 */
+	@CircuitBreaker(name = "orderService", fallbackMethod = "fallbackGetOrder")
+	@GetMapping("/order/{orderId}")
+	public ResponseEntity<Order> getOrder(@PathVariable Integer orderId) {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addInventory method");
+		logger.info("Request to retrieve order with ID: {}", orderId);
+		try {
+			Order order = service.searchOrder(orderId);
+			logger.info("Order retrieved successfully: {}", order);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of getOrder() => " + responseTime.toMillis() + " ms");
+			return new ResponseEntity<>(order, HttpStatus.OK);
+		} catch (OrderNotFoundException e) {
+			logger.error("Order with ID {} not found.", orderId);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of getOrder() => " + responseTime.toMillis() + " ms");
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
+	}
+
+	/**
+	 * Updates an existing order.
+	 *
+	 * @param orderId the ID of the order to update
+	 * @param order   the new order data
+	 * @return a ResponseEntity containing the updated order and HTTP status 200
+	 *         (OK)
+	 */
+	@CircuitBreaker(name = "orderService", fallbackMethod = "fallbackUpdateOrder")
+	@PutMapping("/order/{orderId}")
+	public ResponseEntity<Order> updateOrder(@PathVariable Integer orderId, @RequestBody Order order) {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addInventory method");
+		logger.info("Request to update order with ID: {}. New data: {}", orderId, order);
+		try {
+			Order updatedOrder = service.updateOrder(orderId, order);
+			logger.info("Order updated successfully: {}", updatedOrder);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of updateOrder() => " + responseTime.toMillis() + " ms");
+			return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
+		} catch (OrderNotFoundException e) {
+			logger.error("Order with ID {} not found for update.", orderId);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of updateOrder() => " + responseTime.toMillis() + " ms");
+			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+		}
+	}
+
+	/**
+	 * Deletes an order by its ID.
+	 *
+	 * @param orderId the ID of the order to delete
+	 * @return a ResponseEntity containing a message indicating the result of the
+	 *         deletion and HTTP status 200 (OK)
+	 */
+	@CircuitBreaker(name = "orderService", fallbackMethod = "fallbackDeleteOrder")
+	@DeleteMapping("/order/{orderId}")
+	public ResponseEntity<Void> deleteOrder(@PathVariable Integer orderId) {
+		LocalDateTime startTime = LocalDateTime.now();
+		logger.info("Entering addInventory method");
+		logger.info("Request to delete order with ID: {}", orderId);
+		try {
+			String message = service.deleteOrder(orderId);
+			logger.info("Order deleted successfully: {}", message);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of deleteOrder() => " + responseTime.toMillis() + " ms");
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (OrderNotFoundException e) {
+			logger.error("Order with ID {} not found for deletion.", orderId);
+			LocalDateTime endTime = LocalDateTime.now();
+			Duration responseTime = Duration.between(startTime, endTime);
+			logger.info("Response time of deleteOrder() => " + responseTime.toMillis() + " ms");
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
+	// Fallback methods
+	public ResponseEntity<Order> fallbackAddOrder(RuntimeException e) {
+		logger.error("Fallback method for adding order triggered: {}", e.getMessage());
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Order> fallbackGetOrder(RuntimeException e) {
+		logger.error("Fallback method for getting order triggered: {}", e.getMessage());
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Order> fallbackUpdateOrder(RuntimeException e) {
+		logger.error("Fallback method for updating order triggered: {}", e.getMessage());
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	public ResponseEntity<Void> fallbackDeleteOrder(RuntimeException e) {
+		logger.error("Fallback method for deleting order triggered: {}", e.getMessage());
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+}

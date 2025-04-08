@@ -1,0 +1,34 @@
+package com.wipro.shoppingservice.feign;
+
+import java.util.List;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.onlineretailstore.shopping.entity.Product;
+
+@FeignClient(name = "product", url = "http://localhost:8082/")
+
+public interface FeignProduct {
+
+	@GetMapping("api/products/{productId}")
+	public ResponseEntity<Product> getProduct(@PathVariable Integer productId);
+
+	@GetMapping("api/products")
+	public ResponseEntity<List<Product>> getAllProducts();
+
+	@PostMapping("api/products/addProduct")
+	public ResponseEntity<Product> addProduct(@RequestBody Product product);
+
+	@PutMapping("api/products/updateProduct/{productId}")
+	public ResponseEntity<Product> updateProduct(@PathVariable Integer productId, @RequestBody Product product);
+
+	@DeleteMapping("api/products/{productId}")
+	public ResponseEntity<String> deleteProduct(@PathVariable Integer productId);
+}

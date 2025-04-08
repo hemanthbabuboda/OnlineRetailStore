@@ -1,0 +1,21 @@
+<div class="delete-order">
+    <h2>Delete Order</h2>
+  
+    <div>
+      <label for="orderId">Order ID:</label>
+      <input type="number" [(ngModel)]="orderId" placeholder="Enter Order ID" />
+    </div>
+  
+    <button (click)="deleteOrder()">Delete Order</button>
+  
+    <!-- Display Success Message -->
+    <div *ngIf="successMessage" class="success">
+      {{ successMessage }}
+    </div>
+  
+    <!-- Display Error Message -->
+    <div *ngIf="errorMessage" class="error">
+      {{ errorMessage }}
+    </div>
+  </div>
+  

@@ -1,0 +1,90 @@
+package com.onlineretailstore.order.entity;
+
+import java.io.Serializable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+@Entity
+public class LineItem implements Serializable{
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
+    private Integer itemId;
+
+    @Column
+    @NotNull(message = "Product ID cannot be null")
+    private Integer productId;
+
+    @Column
+    @NotBlank(message = "Product name cannot be blank")
+    private String productName;
+
+    @Column
+    @NotNull(message = "Quantity cannot be null")
+    @Min(value = 1, message = "Quantity must be at least 1")
+    private Integer quantity;
+
+    @Column
+    @NotNull(message = "Price cannot be null")
+    @Min(value = 0, message = "Price must be greater than or equal to 0")
+    private Double price;
+
+    public LineItem() {}
+
+    public LineItem(Integer itemId, Integer productId, String productName, Integer quantity, Double price) {
+        this.itemId = itemId;
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
+    public Integer getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
+    }
+
+    public Integer getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Integer productId) {
+        this.productId = productId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+}

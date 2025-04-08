@@ -1,0 +1,57 @@
+package com.onlineretailstore.order.serviceImpl;
+
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.onlineretailstore.order.entity.LineItem;
+import com.onlineretailstore.order.entity.Order;
+import com.onlineretailstore.order.exception.OrderNotFoundException; // Import the custom exception
+import com.onlineretailstore.order.repository.OrderDao;
+import com.onlineretailstore.order.service.OrderService;
+
+/**
+ * Implementation of the OrderService interface.
+ * This class provides methods to manage orders including
+ * adding, searching, updating, and deleting orders in the system.
+ */
+@Service
+public class OrderServiceImpl implements OrderService {
+
+    @Autowired
+    private OrderDao repo;
+
+    public Order addOrder(Order od) {
+        return repo.save(od);
+    }
+
+    public Order searchOrder(Integer orderId) {
+        Optional<Order> order = repo.findById(orderId);
+        if (order.isPresent()) {
+            return order.get();
+        } else {
+            throw new OrderNotFoundException("Order with ID " + orderId + " not found.");
+        }
+    }
+
+    public Order updateOrder(Integer orderId, Order order) {
+        if (repo.findById(orderId).isPresent()) {
+            Order updatedOrder = new Order(orderId, order.getLineItems());
+            return repo.save(updatedOrder);
+        } else {
+            throw new OrderNotFoundException("Order with ID " + orderId + " not found.");
+        }
+    }
+
+    public String deleteOrder(Integer orderId) {
+        Optional<Order> order = repo.findById(orderId);
+        if (order.isPresent()) {
+            repo.delete(order.get());
+            return "Successfully Deleted";
+        } else {
+            throw new OrderNotFoundException("Order with ID " + orderId + " not found.");
+        }
+    }
+}

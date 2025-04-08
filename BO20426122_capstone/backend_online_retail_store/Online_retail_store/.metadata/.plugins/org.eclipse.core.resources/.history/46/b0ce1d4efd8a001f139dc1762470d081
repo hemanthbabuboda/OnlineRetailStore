@@ -1,0 +1,15 @@
+server:
+  port: 9999  # Port for Config Server
+
+spring:
+  application:
+    name: config-server  # Name of the application
+  cloud:
+    config:
+      server:
+        git:
+          uri: /Users/bo20426122/Documents/Online_retail_store/ConfigServer/src/main/resources/config
+    discovery:
+      client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/  # Eureka server URL

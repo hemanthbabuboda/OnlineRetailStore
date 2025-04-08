@@ -1,0 +1,14 @@
+<h2>Delete Customer</h2>
+<form (ngSubmit)="deleteCustomer()">
+  <label>Customer ID:</label>
+  <input type="number" [(ngModel)]="customerId" name="customerId" required />
+  <button type="submit">Delete Customer</button>
+</form>
+
+<div *ngIf="successMessage">
+  <p>{{successMessage}}</p>
+</div>
+
+<div *ngIf="errorMessage">
+  <p>{{errorMessage}}</p>
+</div>

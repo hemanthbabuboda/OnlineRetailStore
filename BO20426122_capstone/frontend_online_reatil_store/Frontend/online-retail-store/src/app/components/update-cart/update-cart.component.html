@@ -1,0 +1,30 @@
+<div class="update-cart">
+    <h2>Update Cart by ID</h2>
+    <form (ngSubmit)="loadCart()">
+      <label for="cartId">Customer ID</label>
+      <input type="number" [(ngModel)]="cartId" name="cartId" required />
+      <button type="submit">Load Cart</button>
+    </form>
+  
+    <div *ngIf="cart">
+      <form (ngSubmit)="updateCart()">
+        <h3>Update Cart Line Items</h3>
+        <div *ngFor="let item of cart.lineItem; let i = index">
+          <label>Product ID</label>
+          <input type="number" [(ngModel)]="item.productId" name="productId{{i}}" required />
+        
+          <label>Product Name</label>
+          <input type="text" [(ngModel)]="item.productName" name="productName{{i}}" required />
+        
+          <label>Quantity</label>
+          <input type="number" [(ngModel)]="item.quantity" name="quantity{{i}}" required />
+        
+          <label>Price</label>
+          <input type="number" [(ngModel)]="item.price" name="price{{i}}" required />
+        </div>
+        
+        <button type="submit">Update Cart</button>
+      </form>
+    </div>
+  </div>
+  

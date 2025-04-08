@@ -1,0 +1,8 @@
+resilience4j.circuitbreaker:
+  instances:    
+    ShoppingService:      
+      slidingWindowSize: 5      
+      failureRateThreshold: 50      
+      waitDurationInOpenState: 10000      
+      permittedNumberOfCallsInHalfOpenState: 3      
+      minimumNumberOfCalls: 5

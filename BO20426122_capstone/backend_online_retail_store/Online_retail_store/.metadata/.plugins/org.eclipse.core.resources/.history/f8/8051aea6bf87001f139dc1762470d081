@@ -1,0 +1,129 @@
+package com.onlinereatilstore.cart.controller;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.onlinereatilstore.cart.entity.Cart;
+import com.onlinereatilstore.cart.exception.CartNotFoundException; 
+import com.onlinereatilstore.cart.serviceImpl.CartServiceImpl;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:4200")
+public class CartController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CartController.class);
+
+    @Autowired
+    CartServiceImpl service;
+
+    @PostMapping("/cart")
+    @CircuitBreaker
+    public ResponseEntity<Cart> addCart(@RequestBody Cart inv) {
+        LocalDateTime startTime = LocalDateTime.now();
+        logger.info("Entering addCart method");
+        logger.info("Request to add a new cart: {}", inv);
+        Cart createdCart = service.addCart(inv);
+        logger.info("Cart added successfully: {}", createdCart);
+        logResponseTime("addCart", startTime);
+        return new ResponseEntity<>(createdCart, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/cart/{cartId}")
+    @CircuitBreaker
+    public ResponseEntity<Cart> getCart(@PathVariable Integer cartId) {
+        LocalDateTime startTime = LocalDateTime.now();
+        logger.info("Entering getCart method");
+        try {
+            logger.info("Request to retrieve cart with ID: {}", cartId);
+            Cart foundCart = service.searchCart(cartId);
+            logger.info("Cart retrieved successfully: {}", foundCart);
+            logResponseTime("getCart", startTime);
+            return new ResponseEntity<>(foundCart, HttpStatus.OK);
+        } catch (CartNotFoundException e) {
+            logger.error("Cart not found with ID: {}", cartId);
+            logResponseTime("getCart", startTime);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/cart/{cartId}")
+    @CircuitBreaker
+    public ResponseEntity<Cart> updateCart(@PathVariable Integer cartId, @RequestBody Cart cart) {
+        LocalDateTime startTime = LocalDateTime.now();
+        logger.info("Entering updateCart method");
+        try {
+            logger.info("Request to update cart with ID: {}. New data: {}", cartId, cart);
+            Cart updatedCart = service.updateCart(cartId, cart);
+            logger.info("Cart updated successfully: {}", updatedCart);
+            logResponseTime("updateCart", startTime);
+            return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+        } catch (CartNotFoundException e) {
+            logger.error("Cart not found with ID: {}", cartId);
+            logResponseTime("updateCart", startTime);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/cart/{cartId}")
+    @CircuitBreaker
+    public ResponseEntity<Void> deleteCart(@PathVariable Integer cartId) {
+        LocalDateTime startTime = LocalDateTime.now();
+        logger.info("Entering deleteCart method");
+        try {
+            logger.info("Request to delete cart with ID: {}", cartId);
+            String message = service.deleteCart(cartId);
+            logger.info("Cart deleted successfully: {}", message);
+            logResponseTime("deleteCart", startTime);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (CartNotFoundException e) {
+            logger.error("Cart not found for deletion with ID: {}", cartId);
+            logResponseTime("deleteCart", startTime);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Fallback methods
+    public ResponseEntity<Cart> fallbackAddCart(Cart inv, Throwable t) {
+        logger.error("Fallback for addCart method: {}", t.getMessage());
+        return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    public ResponseEntity<Cart> fallbackGetCart(Integer cartId, Throwable t) {
+        logger.error("Fallback for getCart method: {}", t.getMessage());
+        return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    public ResponseEntity<Cart> fallbackUpdateCart(Integer cartId, Cart cart, Throwable t) {
+        logger.error("Fallback for updateCart method: {}", t.getMessage());
+        return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    public ResponseEntity<Void> fallbackDeleteCart(Integer cartId, Throwable t) {
+        logger.error("Fallback for deleteCart method: {}", t.getMessage());
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    private void logResponseTime(String methodName, LocalDateTime startTime) {
+        LocalDateTime endTime = LocalDateTime.now();
+        Duration responseTime = Duration.between(startTime, endTime);
+        logger.info("Response time of {}() => {} ms", methodName, responseTime.toMillis());
+    }
+}
